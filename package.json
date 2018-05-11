@@ -43,5 +43,8 @@
   },
   "peerDependencies": {
     "element-ui": "^2.0.10"
+  },
+  "dependencies": {
+    "element-ui": "^2.3.7"
   }
 }
