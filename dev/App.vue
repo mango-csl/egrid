@@ -51,8 +51,12 @@
                     },
                 }
             }
+            let _data = Data.data;
+            // for(let i = 0;i<5;i++){
+            //     _data.push([...Data.data]);
+            // }
             return {
-                data: Data.data,
+                data: _data,
                 columns: Data.columns,
                 // columnsProps 用于定义所有 columns 公共的属性，
                 // 这里属性可以参考这里： http://element.eleme.io/#/zh-CN/component/table#table-column-attributes

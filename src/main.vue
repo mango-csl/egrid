@@ -51,7 +51,8 @@
                 <slot name="append"></slot>
             </template>
         </el-table>
-        <div class="scroll" v-bind:class="{'scroll-hasY': istableHasY ,'scroll-fixed':isScrollFixed}" ref="scrollElement"
+        <div class="scroll" v-bind:class="{'scroll-hasY': istableHasY ,'scroll-fixed':isScrollFixed}"
+             ref="scrollElement"
              v-if="showScroll"
              @scroll="scrollBarMove($event)">
             <div v-bind:style="{ height: '1px', width: scrollbodyWidth }" ref="scrollbars"></div>
@@ -235,7 +236,7 @@
                 this.renderTypeColumns();
                 this.renderNormalColumns();
             },
-            resize(){
+            resize() {
                 this.getViewport();
                 this.renderNormalColumns();
             },
@@ -256,7 +257,7 @@
                         _tableWidth += this.minColunmWidth;
                     }
                 }
-                let containerWidth = this.$refs.tableContainer.clientWidth - this.typesColumns.length * 48; // table容器宽度
+                let containerWidth = this.$refs.tableContainer.clientWidth - this.typesColumns.length * 48; // table普通列总宽度
                 // this.istableHasY = (this.data.length + 1) * 44 > this.$refs.tableContainer.clientHeight;
                 console.log('containerWidth----', containerWidth);
                 if (containerWidth >= _tableWidth) {
@@ -317,13 +318,13 @@
                 };
             },
             judgeTableInView() {
-                let _tableContainer = this.$refs.tableContainer;
-                let nowTop = this.exploreSize.height - _tableContainer.getBoundingClientRect().top;
-                let result = nowTop < _tableContainer.clientHeight && nowTop > 44;
-                if (result !== this.isScrollFixed) {
-                    this.isScrollFixed = result;
-                }
-                this.$nextTick(()=>{
+                this.$nextTick(() => {
+                    let _tableContainer = this.$refs.tableContainer;
+                    let nowTop = this.exploreSize.height - _tableContainer.getBoundingClientRect().top;
+                    let result = nowTop < _tableContainer.clientHeight && nowTop > 44;
+                    if (result !== this.isScrollFixed) {
+                        this.isScrollFixed = result;
+                    }
                     this.getCurPos();
                 });
             },
