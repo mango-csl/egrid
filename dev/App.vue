@@ -1,5 +1,7 @@
 <template>
     <div id="app">
+        <button @click="clearSelection">添加数据</button>
+        <button @click="console">还原数据</button>
         <!--<egrid stripe-->
         <!--max-height="500"-->
         <!--:data="data"-->
@@ -13,17 +15,16 @@
                :data="data"
                :columns="columns"
                :columns-schema="columnsSchema"
-               :columns-handler="columnsHandler"
                @selection-change="selectionChange">
+            <!--:columns-handler="columnsHandler"-->
             <template slot="expand" slot-scope="{ row }">
                 <section class="expand-detail">
-                    <div v-for="col in columns" :key="col.label">
-                        {{ col.name }}：{{ row[col.prop] }}
-                    </div>
+                <div v-for="col in columns" :key="col.label">
+                {{ col.name }}：{{ row[col.prop] }}
+                </div>
                 </section>
             </template>
         </egrid>
-        <button @click="clearSelection">CLEAR</button>
     </div>
 </template>
 
@@ -44,20 +45,36 @@
                     selectable(row, index) {
                         return index < 2
                     }
-                },
-                index: {
-                    index(index) {
-                        return 2 *index + 1;
-                    },
                 }
             }
-            let _data = Data.data;
+            let _data = Data.data.map(item => Object.assign({}, item, {hasChild: false}));
             // for(let i = 0;i<5;i++){
             //     _data.push([...Data.data]);
             // }
             return {
+                EditorTemp: Editor,
                 data: _data,
-                columns: Data.columns,
+                columns: [
+                    {name: '日期', prop: 'date'},
+                    {name: '姓名', prop: 'name'},
+                    {name: '省份', prop: 'province'},
+                    {name: '市区', prop: 'city'},
+                    {name: '地址', prop: 'address'},
+                    {name: '邮编', prop: 'zip'},
+                    {
+                        // fixed: 'right',
+                        name: '操作',
+                        align: 'left',
+                        component: Btn,
+                        // listeners 可用于监听自定义组件内部 $emit 出的事件
+                        listeners: {
+                            'row-edit'(row) {
+                                row.hasChild = !row.hasChild;
+                                console.log('row-edit', row);
+                            }
+                        }
+                    }
+                ],
                 // columnsProps 用于定义所有 columns 公共的属性，
                 // 这里属性可以参考这里： http://element.eleme.io/#/zh-CN/component/table#table-column-attributes
                 // columnsProps: {
@@ -96,31 +113,45 @@
 
         methods: {
             // columnsHandler 可用于在现有的 columns 进行操作，对 columns 进行增删改，这里新增了操作列
-            columnsHandler(cols) {
-                return cols.concat({
-                    // fixed: 'right',
-                    label: '操作',
-                    align: 'left',
-                    component: Btn,
-                    // listeners 可用于监听自定义组件内部 $emit 出的事件
-                    listeners: {
-                        'row-edit'(row) {
-                            console.log('row-edit', row)
-                        }
-                    }
-                })
-            },
+            // columnsHandler(cols) {
+            //     return cols.concat({
+            //         // fixed: 'right',
+            //         label: '操作',
+            //         align: 'left',
+            //         component: Btn,
+            //         // listeners 可用于监听自定义组件内部 $emit 出的事件
+            //         listeners: {
+            //             'row-edit'(row) {
+            //                 console.log('row-edit', row);
+            //             }
+            //         }
+            //     })
+            // },
 
             selectionChange(rows) {
-                this.selecetedRows = rows
-                console.log('selected', rows)
+                this.selecetedRows = rows;
+                console.log('selected', rows);
             },
 
             clearSelection() {
-                const {egrid} = this.$refs
-                if (egrid && egrid.clearSelection) {
-                    egrid.clearSelection()
+                // const {egrid} = this.$refs
+                // if (egrid && egrid.clearSelection) {
+                //     egrid.clearSelection()
+                // }
+                let _Data = Data.data.slice(0);
+                for (let i = 0; i < 5; i++) {
+                    _Data.push(..._Data)
                 }
+                this.data = _Data;
+                console.log('Data.data = ', this.data);
+            },
+            console() {
+                // const {egrid} = this.$refs
+                // if (egrid && egrid.clearSelection) {
+                //     egrid.clearSelection()
+                // }
+                this.data = Data.data.slice(0);
+                console.log('Data.data = ', this.data);
             }
         },
 

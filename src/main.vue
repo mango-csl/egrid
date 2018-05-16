@@ -1,17 +1,17 @@
 <template>
     <div class="table-container" ref="tableContainer">
-        <el-select
-                v-model="filteredColumn"
-                multiple
-                collapse-tags
-                placeholder="请选择">
-            <el-option
-                    v-for="item in columnOptions"
-                    :key="item.prop"
-                    :label="item.label"
-                    :value="item.prop">
-            </el-option>
-        </el-select>
+        <!--<el-select-->
+        <!--v-model="filteredColumn"-->
+        <!--multiple-->
+        <!--collapse-tags-->
+        <!--placeholder="请选择">-->
+        <!--<el-option-->
+        <!--v-for="item in columnOptions"-->
+        <!--:key="item.prop"-->
+        <!--:label="item.label"-->
+        <!--:value="item.prop">-->
+        <!--</el-option>-->
+        <!--</el-select>-->
         <el-table class="egrid"
                   :data="data" ref="grid"
                   v-loading="loading"
@@ -27,6 +27,25 @@
                         :key="tp.type">
                     <template slot-scope="props">
                         <slot name="expand" v-bind="props"></slot>
+                    </template>
+                </el-table-column>
+                <!--<el-table-column v-if="tp.type === 'expand'"-->
+                <!--:fixed='tp.fixed'-->
+                <!--:width="tp.width">-->
+                <!--<template slot-scope="props">-->
+                <!--<div class='el-table__expand-icon el-table__expand-icon&#45;&#45;expanded' v-if="props.row.hasChild"-->
+                <!--@click=props.store.table.toggleRowExpansion(props.row)>-->
+                <!--<i class='el-icon el-icon-arrow-right'></i>-->
+                <!--</div>-->
+                <!--&lt;!&ndash;<slot name="expand" v-bind="props"></slot>&ndash;&gt;-->
+                <!--</template>-->
+                <!--</el-table-column>-->
+                <!--align="center"-->
+                <el-table-column v-else-if="tp.type === 'index'" :render-header="renderHeader"
+                                 :fixed='tp.fixed'
+                                 :width="tp.width">
+                    <template slot-scope="scope">
+                        {{20*pageNow + scope.$index}}
                     </template>
                 </el-table-column>
                 <el-table-column v-else
@@ -51,7 +70,8 @@
                 <slot name="append"></slot>
             </template>
         </el-table>
-        <div class="scroll" v-bind:class="{'scroll-hasY': istableHasY ,'scroll-fixed':isScrollFixed}"
+        <div class="scroll" v-bind:class="{'scroll-hasY': isTableHasY ,'scroll-fixed':isScrollFixed}"
+             v-bind:style="{ width: scrollContainerWidth }"
              ref="scrollElement"
              v-if="showScroll"
              @scroll="scrollBarMove($event)">
@@ -87,6 +107,18 @@
 
     const TYPES = ['selection', 'expand', 'index'];
 
+    const TYPE_COLUMN_OPTION = {
+        selection: {
+            width: 48
+        },
+        expand: {
+            width: 48
+        },
+        index: {
+            width: 80
+        }
+    };
+
     const COLUMN_KEY_MAP = {
         label: 'label',
         prop: 'prop'
@@ -106,6 +138,10 @@
                 type: Boolean,
                 default: false
             },
+            pageNow: { // 当前页码 控制序号
+                type: Number,
+                default: 1
+            },
             columns: {
                 type: Array,
                 default() {
@@ -118,7 +154,7 @@
             columnsProps: Object,
             columnsSchema: Object,
             columnsHandler: Function,
-            slotAppend: Boolean
+            slotAppend: Boolean,
         },
         components: {
             [ElTable.name]: ElTable,
@@ -145,9 +181,10 @@
                 _escapeListenerResize: undefined,
                 _escapeListenerScroll: undefined,
                 minColunmWidth: 80,
-                istableHasY: false, // table 是否存在纵向滚动条
+                isTableHasY: false, // table 是否存在纵向滚动条
                 isScrollFixed: false, // 横向滚动条 是否需要更改position
                 scrollbodyWidth: '0px',
+                scrollContainerWidth: '0px',
                 showScroll: true,
             }
         },
@@ -166,6 +203,7 @@
             },
             filteredColumn: {
                 set(obj) {
+                    console.log('filteredColumn = ', obj);
                     this.changeColumn(obj);
                 },
                 get() {
@@ -174,6 +212,36 @@
             },
         },
         methods: {
+            handleHeader1(value) {
+                let _filteredColumn = this.filteredColumn.splice(0);
+                let _index = _filteredColumn.findIndex(item => item === value);
+                if (_index > -1) {
+                    _filteredColumn.splice(_index, 1);
+                } else {
+                    _filteredColumn.push(value);
+                }
+                this.filteredColumn = _filteredColumn;
+            },
+            renderHeader(h, {row, column, store, $index}) {
+                const items = this.columnOptions.map((item, index) => {
+                    return <el-option
+                        nativeOn-click={this.handleHeader1.bind(null, item.prop)}
+                        key={item.prop}
+                        label={item.label}
+                        value={item.prop}>
+                    </el-option>
+                });
+                return <div class="suffix-span suffix-container">
+                    <div class="suffix-span">序号</div>
+                    <el-select
+                        value={this.filteredColumn}
+                        multiple
+                        collapse-tags
+                        placeholder="请选择">
+                        {items}
+                    </el-select>
+                </div>;
+            },
             changeColumn(obj) {
                 this.filteredColumn_temp = obj;
                 this.renderNormalColumns();
@@ -197,7 +265,13 @@
                     return it
                 });
                 let _tempColumns = columnsHandler && columnsHandler(renderColumns) || renderColumns;
-                this.showColumns = this.caculateColunmsWidth(_tempColumns);
+                this.$nextTick(() => {
+                    this.showColumns = this.caculateColunmsWidth(_tempColumns);
+                    // this.showColumns = _tempColumns.some(this.checkColumn) ? this.caculateColunmsWidth(_tempColumns) : _tempColumns;
+                });
+            },
+            checkColumn(data) {
+                return data.width === 'auto' || !data.width;
             },
             // 用于渲染特殊列
             renderTypeColumns() {
@@ -211,12 +285,11 @@
                 }
                 const map = columnTypeProps || {};
                 this.typesColumns = typeColums.map(type => {
-                    return {
+                    return Object.assign(TYPE_COLUMN_OPTION[type], {
                         type,
                         props: map[type],
-                        width: 48,
                         fixed: 'left'
-                    }
+                    })
                 });
             },
             getColBind(col) {
@@ -248,43 +321,50 @@
             },
             caculateColunmsWidth(_column) {
                 let orderWidth = 0; // 已限定宽度
-                let _tableWidth = 0;// 预测table宽度
+                let normalColumnsWidth = 0;// 预测table宽度
                 for (let item of _column) {
                     if (item.width) {
                         orderWidth += Number(item.width);
-                        _tableWidth += Number(item.width);
+                        normalColumnsWidth += Number(item.width);
                     } else {
-                        _tableWidth += this.minColunmWidth;
+                        normalColumnsWidth += this.minColunmWidth;
                     }
                 }
-                let containerWidth = this.$refs.tableContainer.clientWidth - this.typesColumns.length * 48; // table普通列总宽度
-                // this.istableHasY = (this.data.length + 1) * 44 > this.$refs.tableContainer.clientHeight;
-                console.log('containerWidth----', containerWidth);
-                if (containerWidth >= _tableWidth) {
+                let containerWidth = this.$refs.tableContainer.clientWidth;
+                let typesColumnsWidth = 0; // 特殊列总宽度
+                for (let key of Object.keys(TYPE_COLUMN_OPTION)) {
+                    typesColumnsWidth += TYPE_COLUMN_OPTION[key].width;
+                }
+                let tableWidth = normalColumnsWidth + typesColumnsWidth; // table总宽度
+                if (containerWidth >= tableWidth) {
                     this.destoryScroll();
-                    let count = Number((_tableWidth - orderWidth) / 80);
-                    let _columnWidth = (containerWidth - orderWidth) / count;
+                    let count = Number((tableWidth - orderWidth - typesColumnsWidth) / 80);
+                    let _columnWidth = ~~((containerWidth - orderWidth - typesColumnsWidth) / count);
                     for (let item of _column) {
-                        if (!item.width) {
+                        if (this.checkColumn(item)) {
                             item.width = _columnWidth + '';
                         }
                     }
                 } else {
                     for (let item of _column) {
-                        if (!item.width) {
+                        if (this.checkColumn(item)) {
                             item.width = 80 + '';
                         }
                     }
-                    this.creartScroll(_tableWidth);
+                    this.creartScroll(tableWidth);
                 }
                 return _column;
             },
             // 创建横向滚动条
             creartScroll(width) {
                 this.$nextTick(() => {
-                    this.showScroll = true;
-                    this.istableHasY = (this.data.length + 1) * 44 > this.$refs.tableContainer.clientHeight;
+                    if (!this.showScroll) {
+                        this.showScroll = true;
+                    }
+                    let _tableContainer = this.$refs.tableContainer;
+                    this.isTableHasY = (this.data.length + 1) * 44 > _tableContainer.clientHeight;
                     this.scrollbodyWidth = width + 'px';
+                    this.scrollContainerWidth = _tableContainer.clientWidth + 'px';
                     this.judgeTableInView();
                     window.addEventListener('scroll', this.judgeTableInView);
                     this._escapeListenerScroll = () => {
@@ -293,7 +373,9 @@
                 });
             },
             destoryScroll() {
-                this.showScroll = false;
+                if (this.showScroll) {
+                    this.showScroll = false;
+                }
                 if (this._escapeListenerScroll) {
                     this._escapeListenerScroll();
                     this._escapeListenerScroll = undefined;
@@ -301,7 +383,7 @@
             },
             // 联动横向滚动
             scrollBarMove(event) {
-                this.$refs.table.$el.childNodes[2].scrollLeft = event.target.scrollLeft;
+                this.$refs.grid.$el.childNodes[2].scrollLeft = event.target.scrollLeft;
             },
             // 获取浏览器视窗大小
             getViewport() {
@@ -318,31 +400,16 @@
                 };
             },
             judgeTableInView() {
-                this.$nextTick(() => {
-                    let _tableContainer = this.$refs.tableContainer;
-                    let nowTop = this.exploreSize.height - _tableContainer.getBoundingClientRect().top;
-                    let result = nowTop < _tableContainer.clientHeight && nowTop > 44;
-                    if (result !== this.isScrollFixed) {
-                        this.isScrollFixed = result;
-                    }
-                    this.getCurPos();
-                });
-            },
-            getCurPos() {
-                let pos = this.$refs.scrollElement.getBoundingClientRect();
-                let result;
-                if (pos.top > this.exploreSize.height) {
-                    result = '我在下面';
-                } else if (pos.bottom < 0) {
-                    result = '我在上面';
-                } else if (pos.left > this.exploreSize.width) {
-                    result = '我在右边';
-                } else if (pos.right < 0) {
-                    result = '我在左边';
-                } else {
-                    result = '我在当前屏';
+                // this.$nextTick(() => {
+                let _tableContainer = this.$refs.tableContainer;
+                let pos = _tableContainer.getBoundingClientRect();
+                let nowTop = this.exploreSize.height - pos.top;
+                let result = nowTop < _tableContainer.clientHeight && nowTop > 44;
+                if (result !== this.isScrollFixed) {
+                    this.isScrollFixed = result;
                 }
-                console.log('判断滚动条是否在视窗内', result);
+                console.log('滚动条是否需要悬浮 = ', result);
+                // });
             }
         },
         mounted() {
@@ -358,6 +425,12 @@
             }
             if (this._escapeListenerScroll) {
                 this._escapeListenerScroll();
+            }
+        },
+        watch: {
+            data(val) {
+                // console.log('data = ', val);
+                this.createColunms();
             }
         }
     }
@@ -393,5 +466,47 @@
         -webkit-box-direction: normal;
         -ms-flex-direction: column;
         flex-direction: column;
+    }
+
+    .el-table th .suffix-span {
+        line-height: 16px;
+        box-sizing: border-box;
+        white-space: nowrap;
+        display: inline-block;
+        padding: 0px;
+    }
+
+    .el-table th .suffix-container {
+        width: 100%;
+        text-align: center;
+        position: relative;
+        top: 3px;
+    }
+
+    .el-table th .el-select {
+        padding: 0px;
+        line-height: 16px;
+        width: 25px;
+    }
+
+    .el-table th .el-input--suffix {
+        padding: 0px;
+        line-height: 16px;
+        height: 16px;
+    }
+
+    .el-table th .el-input--suffix .el-input__inner {
+        padding: 0px;
+        border: 0px;
+        height: 0px;
+    }
+
+    .el-table th .el-input--suffix .el-input__suffix {
+        right: 0;
+        /*line-height: 16px;*/
+    }
+
+    .el-table th .el-select__tags {
+        display: none;
     }
 </style>

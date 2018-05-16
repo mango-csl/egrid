@@ -16,6 +16,10 @@
     "build": "npm run clear && node rollup.config.js"
   },
   "devDependencies": {
+    "throttle-debounce": "^1.0.1",
+    "babel-helper-vue-jsx-merge-props": "^2.0.0",
+    "babel-plugin-syntax-jsx": "^6.8.0",
+    "babel-plugin-transform-vue-jsx": "^3.3.0",
     "babel-core": "^6.26.0",
     "babel-helpers": "^6.24.1",
     "babel-loader": "^7.1.2",
