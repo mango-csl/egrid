@@ -1,25 +1,40 @@
 <template>
     <div id="app">
-        <button @click="clearSelection">添加数据</button>
-        <button @click="console">还原数据</button>
-        <egrid ref="egrid"
-               v-bind="{rowKey:'id'}"
-               :column-type="['tree','selection','index']"
-               :column-type-props="columnTypeProps"
+        <egrid v-bind="{rowKey:'id'}"
                :column-key-map="{ label: 'name' }"
                :data="data"
                :columns="columns"
                :columns-schema="columnsSchema"
-               @selection-change="selectionChange">
+               @row-click="selectionChange">
             <!--:columns-handler="columnsHandler"-->
-            <template slot="expand" slot-scope="{ row }">
-                <section class="expand-detail">
-                    <div v-for="col in columns" :key="col.label">
-                        {{ col.name }}：{{ row[col.prop] }}
-                    </div>
-                </section>
-            </template>
+            <!--<template slot="expand" slot-scope="{ row }">-->
+            <!--<section class="expand-detail">-->
+            <!--<div v-for="col in columns" :key="col.label">-->
+            <!--{{ col.name }}：{{ row[col.prop] }}-->
+            <!--</div>-->
+            <!--</section>-->
+            <!--</template>-->
         </egrid>
+        <el-button type="text" @click="dialogTableVisible = true">打开嵌套表格的 Dialog</el-button>
+        <el-dialog ref="dialog" title="收货地址" :visible.sync="dialogTableVisible" @open>
+            <!--:column-type="['tree','selection','index']"-->
+            <!--:column-type-props="columnTypeProps"-->
+            <egrid v-bind="{rowKey:'id',container:container}"
+                   :column-key-map="{ label: 'name' }"
+                   :data="data"
+                   :columns="columns"
+                   :columns-schema="columnsSchema"
+                   @row-click="selectionChange">
+                <!--:columns-handler="columnsHandler"-->
+                <!--<template slot="expand" slot-scope="{ row }">-->
+                    <!--<section class="expand-detail">-->
+                        <!--<div v-for="col in columns" :key="col.label">-->
+                            <!--{{ col.name }}：{{ row[col.prop] }}-->
+                        <!--</div>-->
+                    <!--</section>-->
+                <!--</template>-->
+            </egrid>
+        </el-dialog>
     </div>
 </template>
 
@@ -48,6 +63,9 @@
                 }
             });
             return {
+                dialogTableVisible: false,
+                dialogTable: false,
+                container:undefined,
                 data: _data.filter(f => f['parent_id'] == null),
                 columns: _columns,
                 // 替换特殊列，配置
@@ -56,7 +74,7 @@
                         selectable(row, index) {
                             return index < 2
                         },
-                        reserveSelection:true
+                        reserveSelection: true
                     },
                     tree: {
                         childNumKey: 'child_num',
@@ -121,29 +139,13 @@
             //     })
             // },
             selectionChange(rows) {
+                this.$refs.dialog;
                 this.selecetedRows = rows;
                 console.log('selected', rows);
-            },
-            clearSelection() {
-                // const {egrid} = this.$refs
-                // if (egrid && egrid.clearSelection) {
-                //     egrid.clearSelection()
-                // }
-                let _Data = Data.data.slice(0);
-                for (let i = 0; i < 5; i++) {
-                    _Data.push(..._Data)
-                }
-                this.data = _Data;
-                console.log('Data.data = ', this.data);
-            },
-            console() {
-                // const {egrid} = this.$refs
-                // if (egrid && egrid.clearSelection) {
-                //     egrid.clearSelection()
-                // }
-                this.data = Data.data.slice(0);
-                console.log('Data.data = ', this.data);
             }
+        },
+        mounted(){
+          this.container = this.$refs.dialog.$el;
         },
         components: {Egrid}
     }
