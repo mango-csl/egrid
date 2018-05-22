@@ -362,7 +362,7 @@
         }
         let containerWidth = this.$refs.tableContainer.clientWidth;
         let typesColumnsWidth = 0; // 特殊列总宽度
-        if (this.$method.hasValue_arr(this.columnType)) {
+        if (this.columnType) {
           for (let key of this.columnType) {
             typesColumnsWidth += TYPE_COLUMN_OPTION[key].width;
           }
