@@ -1,36 +1,131 @@
 export default {
-    data: [
+    data: [{
+        "id": 1,
+        "label": "System",
+        "parent_id": null,
+        "url": null,
+        "depth": 0,
+        "child_num": 3,
+        "description": "System Manager"
+    }, {
+        "id": 2,
+        "label": "base",
+        "parent_id": 1,
+        "depth": 1,
+        "child_num": 5,
+        "description": "Base Manager",
+    }, {
+        "id": 3,
+        "label": "Menus",
+        "parent_id": 2,
+        "depth": 2,
+        "child_num": 0,
+        "description": "menu manager",
+    }, {
+        "id": 4,
+        "label": "Roles",
+        "parent_id": 2,
+        "depth": 2,
+        "child_num": 0,
+        "description": "Role Manager",
+    }, {
+        "id": 5,
+        "label": "Users",
+        "parent_id": 2,
+        "depth": 2,
+        "child_num": 0,
+        "description": "User Manager",
+    }, {
+        "id": 6,
+        "label": "Customs",
+        "parent_id": null,
+        "url": null,
+        "depth": 0,
+        "child_num": 2,
+        "description": "Custom Manager",
+    }, {
+        "id": 7,
+        "label": "CustomList",
+        "parent_id": 6,
+        "depth": 1,
+        "child_num": 0,
+        "description": "CustomList",
+    }, {
+        "id": 8,
+        "label": "Templates",
+        "parent_id": null,
+        "url": null,
+        "depth": 0,
+        "child_num": 1,
+        "description": "Template Manager",
+    }, {
+        "id": 9,
+        "label": "TemplateList",
+        "parent_id": 8,
+        "depth": 1,
+        "child_num": 0,
+        "description": "Template Manager",
+    }, {
+        "id": 10,
+        "label": "Bussiness",
+        "parent_id": null,
+        "url": null,
+        "depth": 0,
+        "child_num": 2,
+        "description": "Bussiness Manager",
+    },
         {
-            date: '2016-05-03',
-            name: '王小虎',
-            province: '上海',
-            city: '普陀区',
-            address: '上海市普陀区金沙江路 1518 弄',
-            zip: 200333
-        },
-        {
-            date: '2016-05-02',
-            name: '王小虎',
-            province: '上海',
-            city: '普陀区',
-            address: '上海市普陀区金沙江路 1518 弄',
-            zip: 200333
-        },
-        {
-            date: '2016-05-04',
-            name: '王小虎',
-            province: '上海',
-            city: '普陀区',
-            address: '上海市普陀区金沙江路 1518 弄',
-            zip: 200333
-        }
-    ],
+            "id": 11,
+            "label": "BussinessList",
+            "parent_id": 10,
+            "url": null,
+            "depth": 1,
+            "child_num": 2,
+            "description": "BussinessList",
+            "children": []
+        }, {
+            "id": 12,
+            "label": "Currencies",
+            "parent_id": 11,
+            "depth": 2,
+            "child_num": 0,
+            "description": "Currencies",
+        }, {
+            "id": 13,
+            "label": "Dealtypes",
+            "parent_id": 11,
+            "depth": 2,
+            "child_num": 0,
+            "description": "Dealtypes",
+        }, {
+            "id": 14,
+            "label": "Products",
+            "parent_id": 10,
+            "url": null,
+            "depth": 1,
+            "child_num": 2,
+            "description": "Products"
+        }, {
+            "id": 15,
+            "label": "ProductTypes",
+            "parent_id": 14,
+            "depth": 2,
+            "child_num": 0,
+            "description": "ProductTypes",
+        }, {
+            "id": 16,
+            "label": "ProductList",
+            "parent_id": 14,
+            "depth": 2,
+            "child_num": 0,
+            "description": "ProductList",
+        }],
     columns: [
-        {name: '日期', prop: 'date'},
-        {name: '姓名', prop: 'name'},
-        {name: '省份', prop: 'province'},
-        {name: '市区', prop: 'city'},
-        {name: '地址', prop: 'address'},
-        {name: '邮编', prop: 'zip'}
+        {name: '测试列', prop: 'label'},
+        {name: '父节点', prop: 'parent_id'},
+        {name: '层级', prop: 'depth'},
+        {name: '编号', prop: 'id'},
+        {name: '子节点数量', prop: 'child_num'},
+        {name: '描述', prop: 'description'}
     ]
 }
